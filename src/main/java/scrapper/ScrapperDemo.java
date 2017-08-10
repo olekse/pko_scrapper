@@ -3,11 +3,10 @@ package scrapper;
 import sun.security.pkcs.ParsingException;
 
 import javax.naming.AuthenticationException;
+import javax.security.auth.login.FailedLoginException;
 import java.io.IOException;
+import java.rmi.AccessException;
 
-/**
- * Created by OleksandrSerediuk on 09.08.2017.
- */
 public class ScrapperDemo {
 
     public static void main(String[] args)  {
@@ -16,12 +15,16 @@ public class ScrapperDemo {
 
         try {
 
-            scrapper.authenticate("login", "password");
+            scrapper.authorise("client number", "password");
             scrapper.listAccounts().stream().forEach(System.out::println);
 
         } catch (ParsingException e) {
             e.printStackTrace();
-        } catch (AuthenticationException e) {
+        } catch (FailedLoginException e) {
+            e.printStackTrace();
+        } catch (AccessException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

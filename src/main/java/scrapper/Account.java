@@ -3,7 +3,7 @@ package scrapper;
 public class Account {
     private String title;
     private String IBAN;
-    private String balance; // shifted 2 decimal points
+    private String balance;
 
     public Account(String title, String NRB, String balance) {
         this.title = title;
