@@ -1,5 +1,6 @@
 # PKO BP Scarpper
 
-main's inside ScrapperDemo
+Login and pasword are hardcoded. Main's inside ScrapperDemo. 
 
-Please use eye protection. If you feel headache get away from the screen.
+Disclaimer:
+Please use eye protection. If you feel headache or dizziness please get away from the screen.
