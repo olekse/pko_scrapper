@@ -1,14 +1,7 @@
 package scrapper;
 
-
 import org.junit.Test;
 
-import javax.security.auth.login.FailedLoginException;
-import java.io.IOException;
-
-/**
- * Created by OleksandrSerediuk on 10.08.2017.
- */
 public class IPKOScrapperTest {
 
     IPKOScrapper scrapper = null;

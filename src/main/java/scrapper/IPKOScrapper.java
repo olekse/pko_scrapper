@@ -42,7 +42,7 @@ public class IPKOScrapper {
 
     public List<Account> fetchAccountList() {
         if (!isAuthenticated) throw new ScrapperNotAuthorisedException("Scrapper is not authorised! Please use authorise(account, password) method.");
-        //map that maps from account title to Account object to simplify data retrieval from multiple sources
+        //maps account title to Account object to simplify data retrieval from multiple sources
         Map<String, Account> accountMap = new HashMap<>();
 
         try {
@@ -145,7 +145,7 @@ public class IPKOScrapper {
         webClient.getOptions().setThrowExceptionOnScriptError(true);
     }
 
-    boolean isInvalidCredentialsMessagePresent(){
+    private boolean isInvalidCredentialsMessagePresent(){
         return null != currentPage.getFirstByXPath("//div[@class=\"ui-error-message x-invalid-credentials\"]");
     }
 
@@ -230,7 +230,7 @@ public class IPKOScrapper {
         currentPage = (HtmlPage) window.getEnclosedPage();
     }
 
-    int getJavascriptJobCount() {
+    private int getJavascriptJobCount() {
         final JavaScriptJobManager tmpJobManager = currentPage.getEnclosingWindow().getJobManager();
         return tmpJobManager.getJobCount();
     }
