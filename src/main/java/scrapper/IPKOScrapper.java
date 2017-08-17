@@ -12,6 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
+import util.HtmlUnitUtil;
+import util.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -28,12 +31,15 @@ public class IPKOScrapper {
     private WebClient webClient;
     private HtmlPage currentPage;
 
-    public IPKOScrapper(){
-        setUpConfiguration();
+    private Logger logger;
+
+    public IPKOScrapper(Logger logger){
+        this.logger = logger;
+        setupWebClientConfiguration();
     }
 
     private HtmlSelect getSelectMenu(String name) throws ParsingException {
-        HtmlSelect select = null;
+        HtmlSelect select;
         while ((select = currentPage.getFirstByXPath("//select[@name=\"" + name + "\"]")) == null) {
             waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL);
         }
@@ -106,13 +112,13 @@ public class IPKOScrapper {
             ex.initCause(e);
             throw ex;
         }
-        System.out.println("Waiting for menu...");
+        logger.log("Waiting for menu...");
         waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU, 5000);
         HtmlElement accountDataBlock = currentPage.getFirstByXPath("//div[@class=\"x-submenu submenu-region\"]");
         DomElement inter = accountDataBlock.getFirstElementChild();
         HtmlUnorderedList unorderedList = (HtmlUnorderedList) inter.getFirstElementChild();
         Iterator<DomElement> elemIterator = unorderedList.getChildElements().iterator();
-        while (elemIterator.hasNext()){
+            while (elemIterator.hasNext()){
             extractMenuCard(accountMap, elemIterator.next());
         }
     }
@@ -135,7 +141,7 @@ public class IPKOScrapper {
     }
 
 
-    private void setUpConfiguration(){
+    private void setupWebClientConfiguration(){
         java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
         webClient = new WebClient();
         webClient.getOptions().setRedirectEnabled(true);
@@ -153,15 +159,21 @@ public class IPKOScrapper {
         return webClient.waitForBackgroundJavaScript(time);
     }
 
-    public void authorise(String login, String password) {
-
+    public void loadStartingPage(){
         try{
             currentPage = webClient.getPage(URL);
         } catch (IOException cause){
             throw new FailedToLoginException("Failed to load a page!", cause);
         }
+    }
 
-        System.out.println("Opening login page...");
+
+    public void authorise(String login, String password) {
+
+        loadStartingPage();
+
+
+        logger.log("Opening login page...");
         waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE, 7000);
         insertStringIntoInput(login);
         tryProceedWithLogin();
@@ -169,14 +181,21 @@ public class IPKOScrapper {
         insertStringIntoInput(password);
         proceedWithPassword();
 
-        System.out.println("Loading home page...");
+        logger.log("Loading home page...");
         waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE, 10000);
         isAuthenticated = true;
     }
 
-    private void tryProceedWithLogin() throws WrongAccountNumberException {
+
+    private void tryProceedWithLogin()  {
+
+
         HtmlElement buttonsDivParent1 = currentPage.getFirstByXPath("//div[@class=\"ui-inplace-dialog-buttonset\"]");
+
+
+
         HtmlButton loginButton = (HtmlButton) buttonsDivParent1.getFirstElementChild();
+
         try {
             currentPage = loginButton.click();
         } catch (IOException cause) {
@@ -186,7 +205,7 @@ public class IPKOScrapper {
         while ( ! (isSecurityImageLabelPresent()
                 || isInvalidCredentialsMessagePresent())){
             waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL * 2);
-            System.out.println("Waiting for password field to come up!");
+            logger.log("Waiting for password field to come up!");
         }
 
         if (isInvalidCredentialsMessagePresent()){
@@ -197,10 +216,17 @@ public class IPKOScrapper {
     }
 
     private boolean isSecurityImageLabelPresent(){
-        return null != currentPage.getFirstByXPath("//label[@class=\"label push-30 label-password-image\"]");
+        return null != HtmlUnitUtil.getHtmlElementFromPageWithClassOrNull(currentPage, "label-password-image");
     }
 
     private void proceedWithPassword() {
+        //Refactoring notes.
+
+        //check if element is present
+        //get element
+        //get data from element or interact with the element
+
+
         HtmlElement buttonsDivParent = currentPage
                 .getFirstByXPath("//div[@class=\"ui-inplace-dialog-buttonset\"]");
         HtmlButton button = (HtmlButton) buttonsDivParent.getFirstElementChild();
@@ -212,7 +238,7 @@ public class IPKOScrapper {
             throw new FailedToLoginException("IOException thrown by a HtmlButton during authorisation!", cause);
         }
 
-        System.out.println("Waiting for redirect...");
+        logger.log("Waiting for redirect...");
 
         while(window.getEnclosedPage() == currentPage ) {
             try {
@@ -237,8 +263,7 @@ public class IPKOScrapper {
 
     private void insertStringIntoInput(String string)  {
         HtmlElement span = currentPage.getFirstByXPath("//span[@class=\"input\"]");
-        HtmlElement inputElement = (HtmlElement) span.getFirstElementChild();
-        HtmlInput inputBox = (HtmlInput) inputElement;
+        HtmlInput inputBox = (HtmlInput)  span.getFirstElementChild();
         inputBox.setValueAttribute(string);
     }
 

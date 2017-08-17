@@ -1,11 +1,13 @@
 package scrapper;
 
+import util.SystemOutLogger;
+
 public class ScrapperDemo {
 
     private IPKOScrapper scrapper;
 
     public ScrapperDemo(){
-        scrapper = new IPKOScrapper();
+        scrapper = new IPKOScrapper(new SystemOutLogger());
     }
 
     public static void main(String[] args)  {
@@ -17,7 +19,7 @@ public class ScrapperDemo {
     }
 
     public void run(){
-        scrapper.authorise("client number", "password");
+        scrapper.authorise("58139759", "156489Vert!@");
         scrapper.fetchAccountList().stream().forEach(System.out::println);
     }
 
