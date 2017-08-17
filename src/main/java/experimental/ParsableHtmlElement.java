@@ -58,6 +58,6 @@ public class ParsableHtmlElement {
     }
 
     public void tryParseFromPage(HtmlPage page){
-        resultingElement = page.getFirstByXPath("//*[contains(@class, '"  + "')]");
+        resultingElement = page.getFirstByXPath("//*[contains(@class, '" + "')]");
     }
 }
