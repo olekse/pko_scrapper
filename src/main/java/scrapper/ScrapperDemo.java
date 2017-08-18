@@ -19,7 +19,7 @@ public class ScrapperDemo {
     }
 
     public void run(){
-        scrapper.authorise("58139759", "156489Vert!@");
+        scrapper.authorise("58139759", "-------");
         scrapper.fetchAccountList().stream().forEach(System.out::println);
     }
 
