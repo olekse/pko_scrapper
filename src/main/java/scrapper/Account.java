@@ -16,6 +16,26 @@ public class Account {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Account account = (Account) o;
+
+        if (title != null ? !title.equals(account.title) : account.title != null) return false;
+        if (IBAN != null ? !IBAN.equals(account.IBAN) : account.IBAN != null) return false;
+        return balance != null ? balance.equals(account.balance) : account.balance == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = title != null ? title.hashCode() : 0;
+        result = 31 * result + (IBAN != null ? IBAN.hashCode() : 0);
+        result = 31 * result + (balance != null ? balance.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Account[" +
                 "title='" + title + '\'' +
