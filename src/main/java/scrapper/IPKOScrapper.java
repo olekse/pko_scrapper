@@ -71,10 +71,8 @@ public class IPKOScrapper {
     private void fetchDataFromSelectMenuElement(HtmlOption option) {
         String optionText = option.getTextContent();
         String[] splittedOptionText = optionText.split(" ");
-
         String accountTitle = buildAccountTitle(splittedOptionText);
         String accountNumber = buildAccountNumber(splittedOptionText);
-
         Account currentAccount = accountMap.get(accountTitle);
         currentAccount.setIBAN(accountNumber);
     }
@@ -97,7 +95,7 @@ public class IPKOScrapper {
         return "PL" + accountNumBuilder.toString();
     }
 
-    private void waitBeforeJSTaskCountLessThanTargetWithMinTime(int targetJSJobCount, Integer minTime){
+    private void waitBeforeLessJSTasksThanTargetWithMinTime(int targetJSJobCount, Integer minTime){
         Timer timer = new Timer();
         timer.reset();
 
@@ -128,16 +126,12 @@ public class IPKOScrapper {
         }
 
         logger.log("Waiting for menu...");
-        waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU, 5000);
-
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU, 5000);
         HtmlDivision upperMenuDiv = getUpperMenuDivision();
         DomElement upperMenuDivChild = HtmlUnitUtil.waitForFirstElementChildWithTimeout(upperMenuDiv, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-
         HtmlUnorderedList listOfAccountCards = (HtmlUnorderedList) HtmlUnitUtil
                 .waitForFirstElementChildWithTimeout(upperMenuDivChild, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-
         Iterator<DomElement> elemIterator = listOfAccountCards.getChildElements().iterator();
-
         while (elemIterator.hasNext()){
             fetchDataFromUpperMenuCard(elemIterator.next());
         }
@@ -154,12 +148,8 @@ public class IPKOScrapper {
         if (menuCardAnchor.getChildElementCount() != NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD){
             return;
         }
-
         Iterable<DomElement> cardElements = menuCardAnchor.getChildElements();
-
-        List<DomElement> cardElementList = StreamSupport.stream(cardElements.spliterator(), false)
-                .collect(Collectors.toList());
-
+        List<DomElement> cardElementList = StreamSupport.stream(cardElements.spliterator(), false).collect(Collectors.toList());
         String accountName = cardElementList.get(0).getAttribute("data-text");
         String amount = cardElementList.get(2).getFirstElementChild().getTextContent();
         accountMap.put(accountName, new Account(accountName, null, amount));
@@ -195,26 +185,24 @@ public class IPKOScrapper {
     public void authenticate(String login, String password) {
         logger.log("Opening login page...");
         loadStartingPage();
-        waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE, 7000);
-        insertStringIntoInput(login);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE, 7000);
+        insertIntoInputField(login);
         enterWithLogin();
-        waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, 5000);
-        insertStringIntoInput(password);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, 5000);
+        insertIntoInputField(password);
         enterWithPassword();
         logger.log("Loading home page...");
-        waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE, 10000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE, 10000);
         isLoggedIn = true;
     }
 
 
+
+
+
     private void enterWithLogin()  {
 
-        String loginButtonParentDivXPath = "//div[@class=\"ui-inplace-dialog-buttonset\"]";
-
-        HtmlElement buttonsDivParent = HtmlUnitUtil
-                .waitForFirstByXPathWithTimeout(currentPage, loginButtonParentDivXPath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-
-        HtmlButton loginButton = (HtmlButton) HtmlUnitUtil.waitForFirstElementChildWithTimeout(buttonsDivParent, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        HtmlButton loginButton = getLoginButton();
 
         try {
             currentPage = loginButton.click();
@@ -232,7 +220,7 @@ public class IPKOScrapper {
             throw new WrongAccountNumberException("Invalid credentials message was detected on the site.");
         }
 
-        waitBeforeJSTaskCountLessThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, 10000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, 10000);
     }
 
     private boolean isSecurityImageLabelPresent(){
@@ -242,7 +230,6 @@ public class IPKOScrapper {
     private HtmlButton getLoginButton(){
         String buttonsDivParentXPath = "//div[@class=\"ui-inplace-dialog-buttonset\"]";
         HtmlElement buttonsDivParent = HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, buttonsDivParentXPath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-
         return (HtmlButton) HtmlUnitUtil.waitForFirstElementChildWithTimeout(buttonsDivParent, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
     }
 
@@ -285,7 +272,7 @@ public class IPKOScrapper {
         return tmpJobManager.getJobCount();
     }
 
-    private void insertStringIntoInput(String string)  {
+    private void insertIntoInputField(String string)  {
         String xPathInput = "//span[@class=\"input\"]";
         HtmlElement span = HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, xPathInput, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
         HtmlInput inputBox = (HtmlInput)  HtmlUnitUtil.waitForFirstElementChildWithTimeout(span, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);

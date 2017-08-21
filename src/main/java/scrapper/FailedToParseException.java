@@ -1,9 +1,6 @@
 package scrapper;
 
 public class FailedToParseException extends RuntimeException {
-    public FailedToParseException() {
-    }
-
     public FailedToParseException(String s) {
         super(s);
     }
