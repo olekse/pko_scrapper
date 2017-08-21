@@ -4,7 +4,6 @@
     <list default="true" id="94af214f-3f81-4cee-9920-ab95a6774d60" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/scrapper/IPKOScrapper.class" afterPath="$PROJECT_DIR$/target/classes/scrapper/IPKOScrapper.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/scrapper/ScrapperDemo.java" afterPath="$PROJECT_DIR$/src/main/java/scrapper/ScrapperDemo.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -935,7 +934,7 @@
       <workItem from="1502954139187" duration="690000" />
       <workItem from="1502957966110" duration="587000" />
       <workItem from="1502958734210" duration="14202000" />
-      <workItem from="1503039848014" duration="37887000" />
+      <workItem from="1503039848014" duration="37895000" />
     </task>
     <task id="LOCAL-00001" summary="Changes inspired by the 1st CR. There's much more to be done here">
       <created>1502716854251</created>
@@ -972,7 +971,14 @@
       <option name="project" value="LOCAL" />
       <updated>1503327594370</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Sample Text.">
+      <created>1503327652820</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1503327652820</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1008,7 +1014,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="149901000" />
+    <option name="totallyTimeSpent" value="149909000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="101" y="24" width="1857" height="1092" extended-state="6" />
