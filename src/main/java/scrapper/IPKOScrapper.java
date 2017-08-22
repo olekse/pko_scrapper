@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class IPKOScrapper {
-
     private static final String URL = "https://www.ipko.pl";
     private static final int MIN_JS_LOAD_TIME_MS = 10000;
     private static final int MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS = 20000;
@@ -28,7 +27,6 @@ public class IPKOScrapper {
     private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 2000;
     private static final int BLOCKS_IN_ACCOUNT_NUMBER = 7;
     public static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
-
     private boolean isLoggedIn = false;
     private WebClient webClient;
     private HtmlPage currentPage;
@@ -146,7 +144,6 @@ public class IPKOScrapper {
     }
 
     private void saveDataFromMenuCard(DomElement cardContainer) {
-
         if (cardContainer.getChildElementCount() == 0) {
             return;
         }
@@ -233,7 +230,6 @@ public class IPKOScrapper {
     }
 
     private void enterWithPassword() {
-
         WebWindow window = currentPage.getEnclosingWindow();
         clickLoginButton();
         logger.log("Waiting for redirect...");
