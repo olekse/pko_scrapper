@@ -1,4 +1,4 @@
-package scrapper;
+package model;
 
 public class Account {
     private String title;

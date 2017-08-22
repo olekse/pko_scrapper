@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 import exception.*;
+import model.Account;
 import util.HtmlUnitUtil;
 import util.Logger;
 import util.SystemOutLogger;
@@ -19,12 +20,13 @@ import java.util.stream.StreamSupport;
 public class IPKOScrapper {
 
     private static final String URL = "https://www.ipko.pl";
-    private static final int MAX_WAITING_TIME_FOR_ELEM_TO_LOAD = 20000;
+    private static final int MIN_JS_LOAD_TIME_MS = 10000;
+    private static final int MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS = 20000;
     private static final int MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE = 3;
     private static final int MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE = 4;
     private static final int MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE = 3;
     private static final int MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU = 4;
-    private static final int MIN_JS_LOADING_WAIT_INTERVAL = 2000;
+    private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 2000;
     private static final int BLOCKS_IN_ACCOUNT_NUMBER = 7;
     public static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
 
@@ -43,7 +45,7 @@ public class IPKOScrapper {
 
     private HtmlSelect getSelectMenu() {
         String xPath = "//select[@name=\"account\"]";
-        return HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, xPath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, xPath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
     }
 
     public Collection<Account> fetchAccountList() {
@@ -100,19 +102,19 @@ public class IPKOScrapper {
 
         while (getJavascriptJobCount() > targetJSJobCount
                 || timer.timePassedLessThanMs(minTime) ) {
-            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL);
+            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
         }
-        waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL);
+        waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
     }
 
     private HtmlAnchor getUpperMenuAnchor(){
         String accountLinkXpath = "//a[@href=\"#accounts\"]";
-        return HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, accountLinkXpath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, accountLinkXpath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
     }
 
     private HtmlDivision getUpperMenuDivision(){
         String upperMenuDivisionXpath = "//div[@class=\"x-submenu submenu-region\"]";
-        return HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, upperMenuDivisionXpath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, upperMenuDivisionXpath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
     }
 
     private void fetchDataFromUpperMenu() {
@@ -125,15 +127,23 @@ public class IPKOScrapper {
         }
 
         logger.log("Waiting for menu...");
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU, 5000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU, MIN_JS_LOAD_TIME_MS);
         HtmlDivision upperMenuDiv = getUpperMenuDivision();
-        DomElement upperMenuDivChild = HtmlUnitUtil.waitForFirstElementChildWithTimeout(upperMenuDiv, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-        HtmlUnorderedList listOfAccountCards = (HtmlUnorderedList) HtmlUnitUtil
-                .waitForFirstElementChildWithTimeout(upperMenuDivChild, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        DomElement upperMenuDivChild = getUpperMenuDivChild(upperMenuDiv);
+        HtmlUnorderedList listOfAccountCards = getListOfAccountCards(upperMenuDivChild);
         Iterator<DomElement> elemIterator = listOfAccountCards.getChildElements().iterator();
         while (elemIterator.hasNext()){
             fetchDataFromUpperMenuCard(elemIterator.next());
         }
+    }
+
+    private DomElement getUpperMenuDivChild(HtmlDivision upperMenuDiv) {
+        return HtmlUnitUtil.waitAndReturnElementChildWithTimeout(upperMenuDiv, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
+    }
+
+    private HtmlUnorderedList getListOfAccountCards(DomElement upperMenuDivChild) {
+        return (HtmlUnorderedList) HtmlUnitUtil
+                .waitAndReturnElementChildWithTimeout(upperMenuDivChild, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
     }
 
     private void fetchDataFromUpperMenuCard(DomElement cardContainer) {
@@ -142,7 +152,7 @@ public class IPKOScrapper {
             return;
         }
 
-        DomElement menuCardAnchor = HtmlUnitUtil.waitForFirstElementChildWithTimeout(cardContainer, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        DomElement menuCardAnchor = HtmlUnitUtil.waitAndReturnElementChildWithTimeout(cardContainer, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
 
         if (menuCardAnchor.getChildElementCount() != NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD){
             return;
@@ -184,14 +194,14 @@ public class IPKOScrapper {
     public void authenticate(String login, String password) {
         logger.log("Opening login page...");
         loadStartingPage();
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE, 7000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE, MIN_JS_LOAD_TIME_MS);
         insertIntoInputField(login);
         enterWithLogin();
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, 5000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
         insertIntoInputField(password);
         enterWithPassword();
         logger.log("Loading home page...");
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE, 10000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE, MIN_JS_LOAD_TIME_MS);
         isLoggedIn = true;
     }
 
@@ -200,16 +210,12 @@ public class IPKOScrapper {
 
 
     private void enterWithLogin()  {
-        HtmlButton loginButton = getLoginButton();
-        try {
-            currentPage = loginButton.click();
-        } catch (IOException cause) {
-            throw new FailedToLoginException("IOException after a login button click!", cause);
-        }
 
-        while ( ! (isSecurityImageLabelPresent()
-                || isInvalidCredentialsMessagePresent())){
-            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL * 2);
+        clickLoginButton();
+
+        while ( (isSecurityImageLabelPresent()
+                || isInvalidCredentialsMessagePresent()) == false){
+            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS * 2);
             logger.log("Waiting for password field to come up!");
         }
 
@@ -217,7 +223,7 @@ public class IPKOScrapper {
             throw new WrongAccountNumberException("Invalid credentials message was detected on the site.");
         }
 
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, 10000);
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
     }
 
     private boolean isSecurityImageLabelPresent(){
@@ -226,8 +232,8 @@ public class IPKOScrapper {
 
     private HtmlButton getLoginButton(){
         String buttonsDivParentXPath = "//div[@class=\"ui-inplace-dialog-buttonset\"]";
-        HtmlElement buttonsDivParent = HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, buttonsDivParentXPath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-        return (HtmlButton) HtmlUnitUtil.waitForFirstElementChildWithTimeout(buttonsDivParent, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        HtmlElement buttonsDivParent = HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, buttonsDivParentXPath, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
+        return (HtmlButton) HtmlUnitUtil.waitAndReturnElementChildWithTimeout(buttonsDivParent, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
     }
 
     private void enterWithPassword() {
@@ -239,9 +245,8 @@ public class IPKOScrapper {
         logger.log("Waiting for redirect...");
 
         while(currentPage == window.getEnclosedPage()) {
-
             try {
-                Thread.sleep(MIN_JS_LOADING_WAIT_INTERVAL);
+                Thread.sleep(MIN_JS_LOADING_WAIT_INTERVAL_MS);
             } catch (InterruptedException cause) {
                 throw new FailedToLoginException("InterruptedException in System.sleep() while waiting for redirect!", cause);
             }
@@ -250,8 +255,7 @@ public class IPKOScrapper {
                 throw new WrongPasswordException("Password was incorrect!");
             }
         }
-
-        waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL);
+        waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
         currentPage = (HtmlPage) window.getEnclosedPage();
     }
 
@@ -271,8 +275,8 @@ public class IPKOScrapper {
 
     private void insertIntoInputField(String string)  {
         String xPathInput = "//span[@class=\"input\"]";
-        HtmlElement span = HtmlUnitUtil.waitForFirstByXPathWithTimeout(currentPage, xPathInput, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
-        HtmlInput inputBox = (HtmlInput)  HtmlUnitUtil.waitForFirstElementChildWithTimeout(span, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD);
+        HtmlElement span = HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, xPathInput, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
+        HtmlInput inputBox = (HtmlInput)  HtmlUnitUtil.waitAndReturnElementChildWithTimeout(span, MAX_WAITING_TIME_FOR_ELEM_TO_LOAD_MS);
         inputBox.setValueAttribute(string);
     }
 }

@@ -10,7 +10,7 @@ public class HtmlUnitUtil {
     public static final Integer JS_WAIT_TIME_CHUNK = 200;
     private static Timer timer = new Timer();
 
-    public static HtmlElement waitForFirstElementChildWithTimeout(DomElement parent, long maxTime){
+    public static HtmlElement waitAndReturnElementChildWithTimeout(DomElement parent, long maxTime){
         DomElement child = null;
         timer.reset();
         do {
@@ -29,7 +29,7 @@ public class HtmlUnitUtil {
     }
 
 
-    public static <X> X waitForFirstByXPathWithTimeout(HtmlPage page, String xpath, long maxTime){
+    public static <X> X waitAndReturnElementByXPathWithTimeout(HtmlPage page, String xpath, long maxTime){
         timer.reset();
         X elem = null;
         do {
