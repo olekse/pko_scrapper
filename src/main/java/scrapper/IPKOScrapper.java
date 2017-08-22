@@ -25,7 +25,7 @@ public class IPKOScrapper {
     private static final int MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU = 4;
     private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 2000;
     private static final int BLOCKS_IN_ACCOUNT_NUMBER = 7;
-    public static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
+    private static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
     private boolean isLoggedIn = false;
     private WebClient webClient;
     private HtmlPage currentPage;
