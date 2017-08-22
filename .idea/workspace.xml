@@ -3,16 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="94af214f-3f81-4cee-9920-ab95a6774d60" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" afterPath="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/util/HtmlUnitUtil.java" afterPath="$PROJECT_DIR$/src/main/java/util/HtmlUnitUtil.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/scrapper/IPKOScrapperTest.java" afterPath="$PROJECT_DIR$/src/test/java/scrapper/IPKOScrapperTest.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/FailedToFetchDataException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/FailedToFetchDataException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/FailedToLoginException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/FailedToLoginException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/FailedToParseException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/FailedToParseException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/ScrapperDemo.java" afterPath="$PROJECT_DIR$/src/main/java/ScrapperDemo.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/ScrapperNotAuthenticatedException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/ScrapperNotAuthenticatedException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/WrongAccountNumberException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/WrongAccountNumberException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/scrapper/WrongPasswordException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/WrongPasswordException.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/ScrapperDemo.java" afterPath="$PROJECT_DIR$/src/main/java/ScrapperDemo.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -40,7 +31,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="IPKOScrapper.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="IPKOScrapper.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="421">
@@ -115,11 +106,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ScrapperDemo.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ScrapperDemo.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/ScrapperDemo.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="102">
-              <caret line="6" column="56" lean-forward="false" selection-start-line="6" selection-start-column="56" selection-end-line="6" selection-end-column="56" />
+              <caret line="6" column="45" lean-forward="false" selection-start-line="6" selection-start-column="45" selection-end-line="6" selection-end-column="45" />
               <folding />
             </state>
           </provider>
@@ -250,6 +241,7 @@
         <option value="$PROJECT_DIR$/src/main/java/exception/FailedToFetchDataException.java" />
         <option value="$PROJECT_DIR$/src/main/java/util/HtmlUnitUtil.java" />
         <option value="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" />
+        <option value="$PROJECT_DIR$/src/main/java/ScrapperDemo.java" />
       </list>
     </option>
   </component>
@@ -1047,7 +1039,7 @@
       <workItem from="1502957966110" duration="587000" />
       <workItem from="1502958734210" duration="14202000" />
       <workItem from="1503039848014" duration="37895000" />
-      <workItem from="1503376757094" duration="2539000" />
+      <workItem from="1503376757094" duration="2570000" />
     </task>
     <task id="LOCAL-00001" summary="Changes inspired by the 1st CR. There's much more to be done here">
       <created>1502716854251</created>
@@ -1091,7 +1083,14 @@
       <option name="project" value="LOCAL" />
       <updated>1503327652820</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Sample Text.">
+      <created>1503382401841</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1503382401841</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1127,7 +1126,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="152448000" />
+    <option name="totallyTimeSpent" value="152479000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1436,14 +1435,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/ScrapperDemo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="56" lean-forward="false" selection-start-line="6" selection-start-column="56" selection-end-line="6" selection-end-column="56" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="421">
@@ -1451,6 +1442,14 @@
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/ScrapperDemo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" column="45" lean-forward="false" selection-start-line="6" selection-start-column="45" selection-end-line="6" selection-end-column="45" />
+          <folding />
         </state>
       </provider>
     </entry>
