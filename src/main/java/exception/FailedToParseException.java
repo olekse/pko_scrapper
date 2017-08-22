@@ -1,4 +1,4 @@
-package scrapper;
+package exception;
 
 public class FailedToParseException extends RuntimeException {
     public FailedToParseException(String s) {

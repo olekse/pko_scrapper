@@ -1,4 +1,4 @@
-package scrapper;
+package exception;
 
 public class FailedToFetchDataException extends RuntimeException {
     public FailedToFetchDataException(String s, Throwable throwable) {

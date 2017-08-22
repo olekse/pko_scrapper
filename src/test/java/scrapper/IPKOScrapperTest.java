@@ -1,7 +1,8 @@
 package scrapper;
 
+import exception.WrongAccountNumberException;
+import exception.WrongPasswordException;
 import org.junit.Test;
-import util.SystemOutLogger;
 
 public class IPKOScrapperTest {
 

@@ -4,16 +4,15 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebWindow;
 import com.gargoylesoftware.htmlunit.html.*;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
+import exception.*;
 import util.HtmlUnitUtil;
 import util.Logger;
 import util.SystemOutLogger;
 import util.Timer;
-
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -201,9 +200,7 @@ public class IPKOScrapper {
 
 
     private void enterWithLogin()  {
-
         HtmlButton loginButton = getLoginButton();
-
         try {
             currentPage = loginButton.click();
         } catch (IOException cause) {
