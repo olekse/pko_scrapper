@@ -7,7 +7,6 @@ import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManager;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
-
 import exception.*;
 import model.Account;
 import util.HtmlUnitUtil;
