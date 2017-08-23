@@ -20,11 +20,9 @@ public class HtmlUnitUtil {
             }
             parent.getPage().getWebClient().waitForBackgroundJavaScript(JS_WAIT_TIME_CHUNK);
         } while (stopWatch.timePassedLessThanMs(maxTime));
-
         if ( (child instanceof HtmlElement) == false){
             throw new ConnectionProblem("Dom element wasn't HtmlElement!");
         }
-
         return (HtmlElement) child;
     }
 
