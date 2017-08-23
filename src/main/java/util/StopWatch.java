@@ -1,19 +1,11 @@
 package util;
 
-public class Timer {
+public class StopWatch {
 
     private long startTime;
 
-    public void reset(){
+    public void start(){
         startTime = System.currentTimeMillis();
-    }
-
-    public long getElapsedTimeMs(){
-        return System.currentTimeMillis() - startTime;
-    }
-
-    public boolean timePassedMoreThanMs(long time){
-        return !timePassedLessThanMs(time);
     }
 
     public boolean timePassedLessThanMs(long time){

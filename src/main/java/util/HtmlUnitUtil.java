@@ -3,26 +3,26 @@ package util;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import exception.FailedToParseException;
+import exception.ConnectionProblem;
 
 public class HtmlUnitUtil {
 
     public static final Integer JS_WAIT_TIME_CHUNK = 200;
-    private static Timer timer = new Timer();
 
     public static HtmlElement waitAndReturnElementChildWithTimeout(DomElement parent, long maxTime){
         DomElement child = null;
-        timer.reset();
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         do {
             child = parent.getFirstElementChild();
             if (child != null){
                 break;
             }
             parent.getPage().getWebClient().waitForBackgroundJavaScript(JS_WAIT_TIME_CHUNK);
-        } while (timer.timePassedLessThanMs(maxTime));
+        } while (stopWatch.timePassedLessThanMs(maxTime));
 
         if ( (child instanceof HtmlElement) == false){
-            throw new FailedToParseException("Dom element wasn't HtmlElement!");
+            throw new ConnectionProblem("Dom element wasn't HtmlElement!");
         }
 
         return (HtmlElement) child;
@@ -30,7 +30,8 @@ public class HtmlUnitUtil {
 
 
     public static <X> X waitAndReturnElementByXPathWithTimeout(HtmlPage page, String xpath, long maxTime){
-        timer.reset();
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         X elem = null;
         do {
             elem = page.getFirstByXPath(xpath);
@@ -38,10 +39,10 @@ public class HtmlUnitUtil {
                 break;
             }
             page.getWebClient().waitForBackgroundJavaScript(JS_WAIT_TIME_CHUNK);
-        } while (timer.timePassedLessThanMs(maxTime));
+        } while (stopWatch.timePassedLessThanMs(maxTime));
 
         if (elem == null){
-            throw new FailedToParseException("Timeout reached while waiting for:[XPATH:" + xpath + "]!");
+            throw new ConnectionProblem("Timeout reached while waiting for:[XPATH:" + xpath + "]!");
         }
         return elem;
     }

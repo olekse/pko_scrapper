@@ -11,26 +11,23 @@ import exception.*;
 import model.Account;
 import util.HtmlUnitUtil;
 import util.Logger;
-import util.Timer;
+import util.StopWatch;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class IPKOScrapper {
     private static final String URL = "https://www.ipko.pl";
-    private static final int MIN_JS_LOAD_TIME_MS = 10000;
+    private static final int MIN_JS_LOAD_TIME_MS = 500;
     private static final int MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS = 20000;
-    private static final int MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE = 3;
     private static final int MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE = 4;
-    private static final int MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE = 3;
-    private static final int MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU = 4;
-    private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 2000;
+    private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 500;
     private static final int BLOCKS_IN_ACCOUNT_NUMBER = 7;
     private static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
-    private boolean isLoggedIn = false;
     private WebClient webClient;
     private HtmlPage currentPage;
     private Map<String, Account> accountMap = null;
     private Logger logger;
+    private boolean isAuthenticated;
 
     public IPKOScrapper(Logger logger){
         this.logger = logger;
@@ -43,15 +40,10 @@ public class IPKOScrapper {
         return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, xPath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
-    public Collection<Account> fetchAccountList() {
-        if (!isLoggedIn) throw new ScrapperNotAuthenticatedException("Scrapper is not authenticated! Please use authenticate(account, password) method.");
-        try {
-            HtmlSelect selectMenu = getAccountSelectMenu();
-            saveDataFromUpperMenu();
-            saveDataFromAccountSelectMenu(selectMenu);
-        } catch (FailedToParseException cause){
-            throw new FailedToFetchDataException("Parsing exception occurred during fetching.", cause);
-        }
+    public Collection<Account> fetchAccounts() {
+        if (!isAuthenticated) throw new NotAuthenticated("You must use IPKOScrapper::authenticate first!");
+        saveDataFromAccountSelectMenu(getAccountSelectMenu());
+        saveDataFromUpperMenu();
         return accountMap.values();
     }
 
@@ -63,12 +55,15 @@ public class IPKOScrapper {
     }
 
     private void saveDataFromSelectMenuElement(HtmlOption option) {
-        String optionText = option.getTextContent();
+        String optionText = option.getTextContent().replace("\n", "");
         String[] splittedOptionText = optionText.split(" ");
-        String accountTitle = buildAccountTitle(splittedOptionText);
+        String accountTitle = buildAccountTitle(splittedOptionText).trim();
         String accountNumber = buildAccountNumber(splittedOptionText);
         Account currentAccount = accountMap.get(accountTitle);
-        currentAccount.setIBAN(accountNumber);
+        if(currentAccount == null){
+            accountMap.put(accountTitle, new Account(accountTitle, accountNumber, "?"));
+        }
+
     }
 
     private String buildAccountTitle(String[] splittedSelectListLine){
@@ -89,10 +84,10 @@ public class IPKOScrapper {
     }
 
     private void waitBeforeLessJSTasksThanTargetWithMinTime(int targetJSJobCount, Integer minTime){
-        Timer timer = new Timer();
-        timer.reset();
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         while (getJavascriptJobCount() > targetJSJobCount
-                || timer.timePassedLessThanMs(minTime) ) {
+                || stopWatch.timePassedLessThanMs(minTime) ) {
             waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
         }
         waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
@@ -111,7 +106,6 @@ public class IPKOScrapper {
     private void saveDataFromUpperMenu() {
         clickOnAnchor(getUpperMenuAnchor());
         logger.log("Waiting for menu...");
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_WITH_MENU, MIN_JS_LOAD_TIME_MS);
         HtmlUnorderedList listOfAccountCards = getUnorderedListOfAccountCards();
         Iterator<DomElement> elemIterator = listOfAccountCards.getChildElements().iterator();
         while (elemIterator.hasNext()){
@@ -129,7 +123,7 @@ public class IPKOScrapper {
         try {
             currentPage = link.click();
         } catch (IOException e) {
-            throw new FailedToParseException("IOException when opening the upper menu.", e);
+            throw new ConnectionProblem("IOException when opening the upper menu.", e);
         }
     }
 
@@ -151,7 +145,7 @@ public class IPKOScrapper {
             return;
         }
         List<DomElement> cardElementList = getMenuElementsFromItsAnchor(menuCardAnchor);
-        putFetchedDataIntoMap(cardElementList);
+        putFetchedUpperMenuDataIntoMap(cardElementList);
     }
 
     private List<DomElement> getMenuElementsFromItsAnchor(DomElement menuCardAnchor){
@@ -159,10 +153,12 @@ public class IPKOScrapper {
         return StreamSupport.stream(cardElements.spliterator(), false).collect(Collectors.toList());
     }
 
-    private void putFetchedDataIntoMap(List<DomElement> cardElementList) {
-        String accountName = cardElementList.get(0).getAttribute("data-text");
-        String amount = cardElementList.get(2).getFirstElementChild().getTextContent();
-        accountMap.put(accountName, new Account(accountName, null, amount));
+    private void putFetchedUpperMenuDataIntoMap(List<DomElement> cardElementList) {
+        String accountName = cardElementList.get(0).getTextContent();
+        HtmlElement amountContainer = HtmlUnitUtil.waitAndReturnElementChildWithTimeout(cardElementList.get(2), MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+        String amount = amountContainer.getTextContent();
+        Account account = accountMap.get(accountName.trim());
+        account.setBalance(amount);
     }
 
     private void setupWebClientConfiguration(){
@@ -187,33 +183,40 @@ public class IPKOScrapper {
         try{
             currentPage = webClient.getPage(URL);
         } catch (IOException cause){
-            throw new FailedToLoginException("Failed to load a page!", cause);
+            throw new ConnectionProblem("Failed to load a page!", cause);
         }
     }
 
     public void authenticate(String login, String password) {
+        if (login == null || login.equals(""))
+            throw new IllegalArgumentException("Login cannot be null or empty!");
+        if (password == null || password.equals(""))
+            throw new IllegalArgumentException("Password cannot be null or empty!");
         logger.log("Opening login page...");
         loadStartingPage();
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_LOGIN_PAGE, MIN_JS_LOAD_TIME_MS);
         insertIntoInputField(login);
         enterWithLogin();
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
         insertIntoInputField(password);
         enterWithPassword();
-        logger.log("Loading home page...");
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_HOME_PAGE, MIN_JS_LOAD_TIME_MS);
-        isLoggedIn = true;
+
+        logger.log("Redirected...");
+        isAuthenticated = true;
     }
 
     private void enterWithLogin()  {
         clickLoginButton();
-        while ( (isSecurityImageLabelPresent()
-                || isInvalidCredentialsMessagePresent()) == false){
-            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS * 2);
-            logger.log("Waiting for password field to come up!");
-        }
-        if (isInvalidCredentialsMessagePresent()){
-            throw new WrongAccountNumberException("Invalid credentials message was detected on the site.");
+        logger.log("Waiting for password field to come up!");
+        StopWatch timeoutStopWatch = new StopWatch();
+        timeoutStopWatch.start();
+
+        while (timeoutStopWatch.timePassedLessThanMs(MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS)){
+            if (isInvalidCredentialsMessagePresent()){
+                throw new WrongAccountNumber("Invalid credentials message was detected on the site.");
+            }
+            if (isSecurityImageLabelPresent()){
+                break;
+            }
+            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
         }
         waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
     }
@@ -236,11 +239,13 @@ public class IPKOScrapper {
             try {
                 Thread.sleep(MIN_JS_LOADING_WAIT_INTERVAL_MS);
             } catch (InterruptedException cause) {
-                throw new FailedToLoginException("InterruptedException in System.sleep() while waiting for redirect!", cause);
+                logger.log("Gamma ray detected! Must comply.");
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(cause);
             }
 
             if (isInvalidCredentialsMessagePresent()){
-                throw new WrongPasswordException("Password was incorrect!");
+                throw new WrongPassword("Password was incorrect!");
             }
         }
         waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
@@ -252,7 +257,7 @@ public class IPKOScrapper {
         try {
             button.click();
         } catch (IOException cause) {
-            throw new FailedToLoginException("IOException thrown by the HtmlButton during authorisation!", cause);
+            throw new ConnectionProblem("IOException thrown by the HtmlButton during authorisation!", cause);
         }
     }
 
