@@ -2,23 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="94af214f-3f81-4cee-9920-ab95a6774d60" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/exception/ConnectionProblem.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/exception/NotAuthenticated.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/exception/FailedToFetchDataException.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/exception/FailedToLoginException.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/exception/FailedToParseException.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/exception/ScrapperNotAuthenticatedException.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/demo/ScrapperDemo.java" afterPath="$PROJECT_DIR$/src/main/java/ScrapperDemo.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/exception/WrongAccountNumberException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/WrongAccountNumber.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/exception/WrongPasswordException.java" afterPath="$PROJECT_DIR$/src/main/java/exception/WrongPassword.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/util/Timer.java" afterPath="$PROJECT_DIR$/src/main/java/util/StopWatch.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/scrapper/IPKOScrapper.class" afterPath="$PROJECT_DIR$/target/classes/scrapper/IPKOScrapper.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/model/Account.java" afterPath="$PROJECT_DIR$/src/main/java/model/Account.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" afterPath="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/util/HtmlUnitUtil.java" afterPath="$PROJECT_DIR$/src/main/java/util/HtmlUnitUtil.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/scrapper/IPKOScrapperTest.java" afterPath="$PROJECT_DIR$/src/test/java/scrapper/IPKOScrapperTest.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -51,12 +36,12 @@
       <file leaf-file-name="IPKOScrapper.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="733">
-              <caret line="43" column="107" lean-forward="false" selection-start-line="43" selection-start-column="107" selection-end-line="43" selection-end-column="107" />
+            <state relative-caret-position="-3371">
+              <caret line="64" column="9" lean-forward="false" selection-start-line="64" selection-start-column="9" selection-end-line="64" selection-end-column="9" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#7925#7926#0" expanded="true" />
-                <element signature="e#7991#7992#0" expanded="true" />
+                <element signature="e#7924#7925#0" expanded="true" />
+                <element signature="e#7990#7991#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -265,9 +250,9 @@
         <option value="$PROJECT_DIR$/src/main/java/util/Timer.java" />
         <option value="$PROJECT_DIR$/src/main/java/util/StopWatch.java" />
         <option value="$PROJECT_DIR$/src/main/java/exception/NotAuthenticated.java" />
-        <option value="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" />
         <option value="$PROJECT_DIR$/src/test/java/scrapper/IPKOScrapperTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/ScrapperDemo.java" />
+        <option value="$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java" />
       </list>
     </option>
   </component>
@@ -314,6 +299,77 @@
             <path>
               <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
               <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="exception" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="scrapper" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="util" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="scrapper" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pko_scrapper" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="scrapper" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -898,7 +954,7 @@
       <workItem from="1503376757094" duration="2570000" />
       <workItem from="1503385873451" duration="4151000" />
       <workItem from="1503391386769" duration="3297000" />
-      <workItem from="1503471484124" duration="13440000" />
+      <workItem from="1503471484124" duration="13732000" />
     </task>
     <task id="LOCAL-00001" summary="Changes inspired by the 1st CR. There's much more to be done here">
       <created>1502716854251</created>
@@ -998,7 +1054,14 @@
       <option name="project" value="LOCAL" />
       <updated>1503413910302</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="A lot of small changes v.G64">
+      <created>1503497231569</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1503497231569</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1034,7 +1097,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="173367000" />
+    <option name="totallyTimeSpent" value="173659000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1093,7 +1156,8 @@
     <MESSAGE value="A lot of small changes" />
     <MESSAGE value="A lot of small changes v2" />
     <MESSAGE value="A lot of small changes v3" />
-    <option name="LAST_COMMIT_MESSAGE" value="A lot of small changes v3" />
+    <MESSAGE value="A lot of small changes v.G64" />
+    <option name="LAST_COMMIT_MESSAGE" value="A lot of small changes v.G64" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1133,8 +1197,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7925#7926#0" expanded="true" />
-            <element signature="e#7991#7992#0" expanded="true" />
+            <element signature="e#7924#7925#0" expanded="true" />
+            <element signature="e#7990#7991#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1177,8 +1241,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7925#7926#0" expanded="true" />
-            <element signature="e#7991#7992#0" expanded="true" />
+            <element signature="e#7924#7925#0" expanded="true" />
+            <element signature="e#7990#7991#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1387,12 +1451,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/scrapper/IPKOScrapper.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="733">
-          <caret line="43" column="107" lean-forward="false" selection-start-line="43" selection-start-column="107" selection-end-line="43" selection-end-column="107" />
+        <state relative-caret-position="-3371">
+          <caret line="64" column="9" lean-forward="false" selection-start-line="64" selection-start-column="9" selection-end-line="64" selection-end-column="9" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7925#7926#0" expanded="true" />
-            <element signature="e#7991#7992#0" expanded="true" />
+            <element signature="e#7924#7925#0" expanded="true" />
+            <element signature="e#7990#7991#0" expanded="true" />
           </folding>
         </state>
       </provider>

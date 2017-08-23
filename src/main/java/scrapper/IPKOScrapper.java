@@ -63,7 +63,6 @@ public class IPKOScrapper {
         if(currentAccount == null){
             accountMap.put(accountTitle, new Account(accountTitle, accountNumber, "?"));
         }
-
     }
 
     private String buildAccountTitle(String[] splittedSelectListLine){
@@ -198,7 +197,6 @@ public class IPKOScrapper {
         enterWithLogin();
         insertIntoInputField(password);
         enterWithPassword();
-
         logger.log("Redirected...");
         isAuthenticated = true;
     }
@@ -208,7 +206,6 @@ public class IPKOScrapper {
         logger.log("Waiting for password field to come up!");
         StopWatch timeoutStopWatch = new StopWatch();
         timeoutStopWatch.start();
-
         while (timeoutStopWatch.timePassedLessThanMs(MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS)){
             if (isInvalidCredentialsMessagePresent()){
                 throw new WrongAccountNumber("Invalid credentials message was detected on the site.");
