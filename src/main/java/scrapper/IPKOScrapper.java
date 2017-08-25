@@ -25,13 +25,19 @@ public class IPKOScrapper {
     private static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
     private WebClient webClient;
     private HtmlPage currentPage;
-    private Map<String, Account> accountMap = null;
+    private Map<String, Account> accountMap = new HashMap<>();
     private Logger logger;
-    private boolean isAuthenticated;
+    private String login;
+    private String password;
 
-    public IPKOScrapper(Logger logger){
+    public IPKOScrapper(String login, String password, Logger logger) {
+        if (login == null || login.equals(""))
+            throw new IllegalArgumentException("Login cannot be null or empty!");
+        if (password == null || password.equals(""))
+            throw new IllegalArgumentException("Password cannot be null or empty!");
+        this.login = login;
+        this.password = password;
         this.logger = logger;
-        accountMap = new HashMap<>();
         setupWebClientConfiguration();
     }
 
@@ -41,15 +47,15 @@ public class IPKOScrapper {
     }
 
     public Collection<Account> fetchAccounts() {
-        if (!isAuthenticated) throw new NotAuthenticated("You must use IPKOScrapper::authenticate first!");
-        saveDataFromAccountSelectMenu(getAccountSelectMenu());
-        saveDataFromUpperMenu();
+        authenticate();
+        saveAccountNumberFromAccountSelectMenu(getAccountSelectMenu());
+        saveAccountValueFromUpperMenu();
         return accountMap.values();
     }
 
-    private void saveDataFromAccountSelectMenu(HtmlSelect selectMenu) {
+    private void saveAccountNumberFromAccountSelectMenu(HtmlSelect selectMenu) {
         List<HtmlOption> selectListOptions = selectMenu.getOptions();
-        for(HtmlOption option : selectListOptions){
+        for (HtmlOption option : selectListOptions) {
             saveDataFromSelectMenuElement(option);
         }
     }
@@ -60,21 +66,21 @@ public class IPKOScrapper {
         String accountTitle = buildAccountTitle(splittedOptionText).trim();
         String accountNumber = buildAccountNumber(splittedOptionText);
         Account currentAccount = accountMap.get(accountTitle);
-        if(currentAccount == null){
+        if (currentAccount == null) {
             accountMap.put(accountTitle, new Account(accountTitle, accountNumber, "?"));
         }
     }
 
-    private String buildAccountTitle(String[] splittedSelectListLine){
+    private String buildAccountTitle(String[] splittedSelectListLine) {
         StringBuilder accNameBuilder = new StringBuilder();
-        for(int i = 0; i < splittedSelectListLine.length - 1 - BLOCKS_IN_ACCOUNT_NUMBER; i++){
+        for (int i = 0; i < splittedSelectListLine.length - 1 - BLOCKS_IN_ACCOUNT_NUMBER; i++) {
             accNameBuilder.append(splittedSelectListLine[i] + " ");
         }
         accNameBuilder.append(splittedSelectListLine[splittedSelectListLine.length - 1 - BLOCKS_IN_ACCOUNT_NUMBER]);
         return accNameBuilder.toString();
     }
 
-    private String buildAccountNumber(String[] accInfoSplitLine){
+    private String buildAccountNumber(String[] accInfoSplitLine) {
         StringBuilder accountNumBuilder = new StringBuilder();
         for(int i = accInfoSplitLine.length - BLOCKS_IN_ACCOUNT_NUMBER; i < accInfoSplitLine.length; i++){
             accountNumBuilder.append(accInfoSplitLine[i]);
@@ -82,33 +88,32 @@ public class IPKOScrapper {
         return "PL" + accountNumBuilder.toString();
     }
 
-    private void waitBeforeLessJSTasksThanTargetWithMinTime(int targetJSJobCount, Integer minTime){
+    private void waitBeforeLessJSTasksThanTargetWithMinTime(int targetJSJobCount, Integer minTime) {
         StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
         while (getJavascriptJobCount() > targetJSJobCount
-                || stopWatch.timePassedLessThanMs(minTime) ) {
+                || stopWatch.isTimePassedLessThanMs(minTime) ) {
             waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
         }
         waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
     }
 
-    private HtmlAnchor getUpperMenuAnchor(){
+    private HtmlAnchor getUpperMenuLink() {
         String accountLinkXpath = "//a[@href=\"#accounts\"]";
         return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, accountLinkXpath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
-    private HtmlDivision getUpperMenuDivision(){
+    private HtmlDivision getUpperMenuDivision() {
         String upperMenuDivisionXpath = "//div[@class=\"x-submenu submenu-region\"]";
         return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, upperMenuDivisionXpath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
-    private void saveDataFromUpperMenu() {
-        clickOnAnchor(getUpperMenuAnchor());
+    private void saveAccountValueFromUpperMenu() {
+        clickOnAnchor(getUpperMenuLink());
         logger.log("Waiting for menu...");
         HtmlUnorderedList listOfAccountCards = getUnorderedListOfAccountCards();
         Iterator<DomElement> elemIterator = listOfAccountCards.getChildElements().iterator();
-        while (elemIterator.hasNext()){
-            saveDataFromMenuCard(elemIterator.next());
+        while (elemIterator.hasNext()) {
+            saveAccountValueFromMenuCard(elemIterator.next());
         }
     }
 
@@ -135,7 +140,7 @@ public class IPKOScrapper {
                 .waitAndReturnElementChildWithTimeout(upperMenuDivChild, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
-    private void saveDataFromMenuCard(DomElement cardContainer) {
+    private void saveAccountValueFromMenuCard(DomElement cardContainer) {
         if (cardContainer.getChildElementCount() == 0) {
             return;
         }
@@ -147,7 +152,7 @@ public class IPKOScrapper {
         putFetchedUpperMenuDataIntoMap(cardElementList);
     }
 
-    private List<DomElement> getMenuElementsFromItsAnchor(DomElement menuCardAnchor){
+    private List<DomElement> getMenuElementsFromItsAnchor(DomElement menuCardAnchor) {
         Iterable<DomElement> cardElements = menuCardAnchor.getChildElements();
         return StreamSupport.stream(cardElements.spliterator(), false).collect(Collectors.toList());
     }
@@ -160,7 +165,7 @@ public class IPKOScrapper {
         account.setBalance(amount);
     }
 
-    private void setupWebClientConfiguration(){
+    private void setupWebClientConfiguration() {
         java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
         webClient = new WebClient();
         webClient.getOptions().setRedirectEnabled(true);
@@ -170,27 +175,24 @@ public class IPKOScrapper {
         webClient.getOptions().setThrowExceptionOnScriptError(true);
     }
 
-    private boolean isInvalidCredentialsMessagePresent(){
+    private boolean isInvalidCredentialsMessagePresent() {
         return null != currentPage.getFirstByXPath("//div[@class=\"ui-error-message x-invalid-credentials\"]");
     }
 
-    private int waitForJsToLoadInMs(long time){
+    private int waitForJsToLoadInMs(long time) {
         return webClient.waitForBackgroundJavaScript(time);
     }
 
-    private void loadStartingPage(){
+    private void loadStartingPage() {
         try{
             currentPage = webClient.getPage(URL);
-        } catch (IOException cause){
+        } catch (IOException cause) {
             throw new ConnectionProblem("Failed to load a page!", cause);
         }
     }
 
-    public void authenticate(String login, String password) {
-        if (login == null || login.equals(""))
-            throw new IllegalArgumentException("Login cannot be null or empty!");
-        if (password == null || password.equals(""))
-            throw new IllegalArgumentException("Password cannot be null or empty!");
+    private void authenticate() {
+
         logger.log("Opening login page...");
         loadStartingPage();
         insertIntoInputField(login);
@@ -198,19 +200,17 @@ public class IPKOScrapper {
         insertIntoInputField(password);
         enterWithPassword();
         logger.log("Redirected...");
-        isAuthenticated = true;
     }
 
-    private void enterWithLogin()  {
+    private void enterWithLogin() {
         clickLoginButton();
         logger.log("Waiting for password field to come up!");
         StopWatch timeoutStopWatch = new StopWatch();
-        timeoutStopWatch.start();
-        while (timeoutStopWatch.timePassedLessThanMs(MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS)){
-            if (isInvalidCredentialsMessagePresent()){
-                throw new WrongAccountNumber("Invalid credentials message was detected on the site.");
+        while (timeoutStopWatch.isTimePassedLessThanMs(MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS)) {
+            if (isInvalidCredentialsMessagePresent()) {
+                throw new WrongLoginFormat("Invalid credentials message was detected on the site.");
             }
-            if (isSecurityImageLabelPresent()){
+            if (isSecurityImageLabelPresent()) {
                 break;
             }
             waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
@@ -218,11 +218,11 @@ public class IPKOScrapper {
         waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
     }
 
-    private boolean isSecurityImageLabelPresent(){
+    private boolean isSecurityImageLabelPresent() {
         return null != HtmlUnitUtil.getHtmlElementFromPageWithClassOrNull(currentPage, "label-password-image");
     }
 
-    private HtmlButton getLoginButton(){
+    private HtmlButton getLoginButton() {
         String buttonsDivParentXPath = "//div[@class=\"ui-inplace-dialog-buttonset\"]";
         HtmlElement buttonsDivParent = HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, buttonsDivParentXPath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
         return (HtmlButton) HtmlUnitUtil.waitAndReturnElementChildWithTimeout(buttonsDivParent, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
@@ -263,7 +263,7 @@ public class IPKOScrapper {
         return tmpJobManager.getJobCount();
     }
 
-    private void insertIntoInputField(String string)  {
+    private void insertIntoInputField(String string) {
         String xPathInput = "//span[@class=\"input\"]";
         HtmlElement span = HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, xPathInput, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
         HtmlInput inputBox = (HtmlInput)  HtmlUnitUtil.waitAndReturnElementChildWithTimeout(span, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
