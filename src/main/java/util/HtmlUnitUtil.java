@@ -1,6 +1,7 @@
 package util;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import exception.ConnectionProblem;
@@ -11,32 +12,11 @@ public class HtmlUnitUtil {
 
     public static final Integer JS_WAIT_TIME_CHUNK = 200;
 
-    public static HtmlElement waitAndReturnElementChildWithTimeout(DomElement parent, long maxTime){
-        DomElement child = null;
-        StopWatch stopWatch = new StopWatch();
-        do {
-            child = parent.getFirstElementChild();
-            if (child != null){
-                break;
-            }
-            parent.getPage().getWebClient().waitForBackgroundJavaScript(JS_WAIT_TIME_CHUNK);
-        } while (stopWatch.isTimePassedLessThanMs(maxTime));
-        if ( (child instanceof HtmlElement) == false){
-            throw new ConnectionProblem("Dom element wasn't HtmlElement!");
-        }
-        return (HtmlElement) child;
-    }
-
-    public static void foo(Node node){
-        DOMNodeSelector domNodeSelector = new DOMNodeSelector(node);
-
-    }
-
-    public static <X> X waitAndReturnElementByXPathWithTimeout(HtmlPage page, String xpath, long maxTime){
+    public static <X extends DomNode> X waitAndReturnElementBySelectorWithTimeout(HtmlPage page, String selector, long maxTime){
         StopWatch stopWatch = new StopWatch();
         X elem = null;
         do {
-            elem = page.getFirstByXPath(xpath);
+            elem = page.querySelector(selector);
             if (elem != null) {
                 break;
             }
@@ -44,8 +24,9 @@ public class HtmlUnitUtil {
         } while (stopWatch.isTimePassedLessThanMs(maxTime));
 
         if (elem == null){
-            throw new ConnectionProblem("Timeout reached while waiting for:[XPATH:" + xpath + "]!");
+            throw new ConnectionProblem("Timeout reached while waiting for:[CSS Selector:" + selector + "]!");
         }
+
         return elem;
     }
 

@@ -12,8 +12,6 @@ import model.Account;
 import util.HtmlUnitUtil;
 import util.Logger;
 import util.StopWatch;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class IPKOScrapper {
     private static final String URL = "https://www.ipko.pl";
@@ -22,11 +20,10 @@ public class IPKOScrapper {
     private static final int MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE = 4;
     private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 500;
     private static final int BLOCKS_IN_ACCOUNT_NUMBER = 7;
-    private static final int NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD = 3;
+    private Logger logger;
     private WebClient webClient;
     private HtmlPage currentPage;
     private Map<String, Account> accountMap = new HashMap<>();
-    private Logger logger;
     private String login;
     private String password;
 
@@ -41,9 +38,14 @@ public class IPKOScrapper {
         setupWebClientConfiguration();
     }
 
-    private HtmlSelect getAccountSelectMenu() {
-        String xPath = "//select[@name=\"account\"]";
-        return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, xPath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+    private void setupWebClientConfiguration() {
+        java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
+        webClient = new WebClient();
+        webClient.getOptions().setRedirectEnabled(true);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        webClient.getOptions().setHistoryPageCacheLimit(0);
+        webClient.getCookieManager().setCookiesEnabled(true);
+        webClient.getOptions().setThrowExceptionOnScriptError(true);
     }
 
     public Collection<Account> fetchAccounts() {
@@ -51,6 +53,76 @@ public class IPKOScrapper {
         saveAccountNumberFromAccountSelectMenu(getAccountSelectMenu());
         saveAccountValueFromUpperMenu();
         return accountMap.values();
+    }
+
+    private void authenticate() {
+        logger.log("Opening login page...");
+        loadStartingPage();
+        insertIntoInputField(login);
+        enterWithLogin();
+        insertIntoInputField(password);
+        enterWithPassword();
+        logger.log("Redirected...");
+    }
+
+    private void loadStartingPage() {
+        try{
+            currentPage = webClient.getPage(URL);
+        } catch (IOException cause) {
+            throw new ConnectionProblem("Failed to load a page!", cause);
+        }
+    }
+
+    private void insertIntoInputField(String string) {
+        HtmlInput inputField = getInputField();
+        inputField.setValueAttribute(string);
+    }
+
+    private HtmlInput getInputField(){
+        String cssSelector = "input[type]";
+        return HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, cssSelector, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+    }
+
+    private void enterWithLogin() {
+        clickLoginButton();
+        logger.log("Waiting for password field to come up!");
+        StopWatch timeoutStopWatch = new StopWatch();
+        while (timeoutStopWatch.isTimePassedLessThanMs(MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS)) {
+            if (isInvalidCredentialsMessagePresent()) {
+                throw new WrongLoginFormat("Invalid credentials message was detected on the site.");
+            }
+            if (isSecurityImageLabelPresent()) {
+                break;
+            }
+            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
+        }
+        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
+    }
+
+    private void enterWithPassword() {
+        WebWindow window = currentPage.getEnclosingWindow();
+        clickLoginButton();
+        logger.log("Waiting for redirect...");
+        while(currentPage == window.getEnclosedPage()) {
+            try {
+                Thread.sleep(MIN_JS_LOADING_WAIT_INTERVAL_MS);
+            } catch (InterruptedException cause) {
+                logger.log("Gamma ray detected! Must comply.");
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(cause);
+            }
+
+            if (isInvalidCredentialsMessagePresent()){
+                throw new WrongPassword("Password was incorrect!");
+            }
+        }
+        waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
+        currentPage = (HtmlPage) window.getEnclosedPage();
+    }
+
+    private HtmlSelect getAccountSelectMenu() {
+        String cssSelector = "select[name=\"account\"]";
+        return HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, cssSelector, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
     private void saveAccountNumberFromAccountSelectMenu(HtmlSelect selectMenu) {
@@ -98,17 +170,13 @@ public class IPKOScrapper {
     }
 
     private HtmlAnchor getUpperMenuLink() {
-        String accountLinkXpath = "//a[@href=\"#accounts\"]";
-        return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, accountLinkXpath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-    }
-
-    private HtmlDivision getUpperMenuDivision() {
-        String upperMenuDivisionXpath = "//div[@class=\"x-submenu submenu-region\"]";
-        return HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, upperMenuDivisionXpath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+        String cssSelector = "a[href=\"#accounts\"]";
+        HtmlAnchor anchor = HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, cssSelector, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+        return anchor;
     }
 
     private void saveAccountValueFromUpperMenu() {
-        clickOnAnchor(getUpperMenuLink());
+        clickOnLink(getUpperMenuLink());
         logger.log("Waiting for menu...");
         HtmlUnorderedList listOfAccountCards = getUnorderedListOfAccountCards();
         Iterator<DomElement> elemIterator = listOfAccountCards.getChildElements().iterator();
@@ -118,12 +186,11 @@ public class IPKOScrapper {
     }
 
     private HtmlUnorderedList getUnorderedListOfAccountCards() {
-        HtmlDivision upperMenuDiv = getUpperMenuDivision();
-        DomElement upperMenuDivChild = getUpperMenuDivChild(upperMenuDiv);
-        return getListOfAccountCards(upperMenuDivChild);
+        String cssSelector = "ul.submenu";
+        return (HtmlUnorderedList) HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, cssSelector, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
-    private void clickOnAnchor(HtmlAnchor link) {
+    private void clickOnLink(HtmlAnchor link) {
         try {
             currentPage = link.click();
         } catch (IOException e) {
@@ -131,48 +198,16 @@ public class IPKOScrapper {
         }
     }
 
-    private DomElement getUpperMenuDivChild(HtmlDivision upperMenuDiv) {
-        return HtmlUnitUtil.waitAndReturnElementChildWithTimeout(upperMenuDiv, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-    }
-
-    private HtmlUnorderedList getListOfAccountCards(DomElement upperMenuDivChild) {
-        return (HtmlUnorderedList) HtmlUnitUtil
-                .waitAndReturnElementChildWithTimeout(upperMenuDivChild, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-    }
-
     private void saveAccountValueFromMenuCard(DomElement cardContainer) {
-        if (cardContainer.getChildElementCount() == 0) {
+        HtmlDivision nameDivison = cardContainer.querySelector("div.account-title");
+        if (nameDivison == null) {
             return;
         }
-        DomElement menuCardAnchor = HtmlUnitUtil.waitAndReturnElementChildWithTimeout(cardContainer, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-        if (menuCardAnchor.getChildElementCount() != NUM_OF_ELEMENTS_IN_UPPER_MENU_CARD) {
-            return;
-        }
-        List<DomElement> cardElementList = getMenuElementsFromItsAnchor(menuCardAnchor);
-        putFetchedUpperMenuDataIntoMap(cardElementList);
-    }
-
-    private List<DomElement> getMenuElementsFromItsAnchor(DomElement menuCardAnchor) {
-        Iterable<DomElement> cardElements = menuCardAnchor.getChildElements();
-        return StreamSupport.stream(cardElements.spliterator(), false).collect(Collectors.toList());
-    }
-
-    private void putFetchedUpperMenuDataIntoMap(List<DomElement> cardElementList) {
-        String accountName = cardElementList.get(0).getTextContent();
-        HtmlElement amountContainer = HtmlUnitUtil.waitAndReturnElementChildWithTimeout(cardElementList.get(2), MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-        String amount = amountContainer.getTextContent();
-        Account account = accountMap.get(accountName.trim());
-        account.setBalance(amount);
-    }
-
-    private void setupWebClientConfiguration() {
-        java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
-        webClient = new WebClient();
-        webClient.getOptions().setRedirectEnabled(true);
-        webClient.getOptions().setJavaScriptEnabled(true);
-        webClient.getOptions().setHistoryPageCacheLimit(0);
-        webClient.getCookieManager().setCookiesEnabled(true);
-        webClient.getOptions().setThrowExceptionOnScriptError(true);
+        String accountName = nameDivison.getTextContent();
+        HtmlSpan span = cardContainer.querySelector("a.x-element > div > span");
+        String value = span.getTextContent();
+        Account current = accountMap.get(accountName);
+        current.setBalance(value);
     }
 
     private boolean isInvalidCredentialsMessagePresent() {
@@ -183,70 +218,8 @@ public class IPKOScrapper {
         return webClient.waitForBackgroundJavaScript(time);
     }
 
-    private void loadStartingPage() {
-        try{
-            currentPage = webClient.getPage(URL);
-        } catch (IOException cause) {
-            throw new ConnectionProblem("Failed to load a page!", cause);
-        }
-    }
-
-    private void authenticate() {
-
-        logger.log("Opening login page...");
-        loadStartingPage();
-        insertIntoInputField(login);
-        enterWithLogin();
-        insertIntoInputField(password);
-        enterWithPassword();
-        logger.log("Redirected...");
-    }
-
-    private void enterWithLogin() {
-        clickLoginButton();
-        logger.log("Waiting for password field to come up!");
-        StopWatch timeoutStopWatch = new StopWatch();
-        while (timeoutStopWatch.isTimePassedLessThanMs(MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS)) {
-            if (isInvalidCredentialsMessagePresent()) {
-                throw new WrongLoginFormat("Invalid credentials message was detected on the site.");
-            }
-            if (isSecurityImageLabelPresent()) {
-                break;
-            }
-            waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
-        }
-        waitBeforeLessJSTasksThanTargetWithMinTime(MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE, MIN_JS_LOAD_TIME_MS);
-    }
-
     private boolean isSecurityImageLabelPresent() {
         return null != HtmlUnitUtil.getHtmlElementFromPageWithClassOrNull(currentPage, "label-password-image");
-    }
-
-    private HtmlButton getLoginButton() {
-        String buttonsDivParentXPath = "//div[@class=\"ui-inplace-dialog-buttonset\"]";
-        HtmlElement buttonsDivParent = HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, buttonsDivParentXPath, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-        return (HtmlButton) HtmlUnitUtil.waitAndReturnElementChildWithTimeout(buttonsDivParent, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-    }
-
-    private void enterWithPassword() {
-        WebWindow window = currentPage.getEnclosingWindow();
-        clickLoginButton();
-        logger.log("Waiting for redirect...");
-        while(currentPage == window.getEnclosedPage()) {
-            try {
-                Thread.sleep(MIN_JS_LOADING_WAIT_INTERVAL_MS);
-            } catch (InterruptedException cause) {
-                logger.log("Gamma ray detected! Must comply.");
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(cause);
-            }
-
-            if (isInvalidCredentialsMessagePresent()){
-                throw new WrongPassword("Password was incorrect!");
-            }
-        }
-        waitForJsToLoadInMs(MIN_JS_LOADING_WAIT_INTERVAL_MS);
-        currentPage = (HtmlPage) window.getEnclosedPage();
     }
 
     private void clickLoginButton() {
@@ -258,15 +231,12 @@ public class IPKOScrapper {
         }
     }
 
+    private HtmlButton getLoginButton() {
+        return HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, "button[role=\"button\"]", MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+    }
+
     private int getJavascriptJobCount() {
         final JavaScriptJobManager tmpJobManager = currentPage.getEnclosingWindow().getJobManager();
         return tmpJobManager.getJobCount();
-    }
-
-    private void insertIntoInputField(String string) {
-        String xPathInput = "//span[@class=\"input\"]";
-        HtmlElement span = HtmlUnitUtil.waitAndReturnElementByXPathWithTimeout(currentPage, xPathInput, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-        HtmlInput inputBox = (HtmlInput)  HtmlUnitUtil.waitAndReturnElementChildWithTimeout(span, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
-        inputBox.setValueAttribute(string);
     }
 }
