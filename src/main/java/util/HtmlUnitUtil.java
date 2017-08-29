@@ -26,7 +26,6 @@ public class HtmlUnitUtil {
         if (elem == null){
             throw new ConnectionProblem("Timeout reached while waiting for:[CSS Selector:" + selector + "]!");
         }
-
         return elem;
     }
 

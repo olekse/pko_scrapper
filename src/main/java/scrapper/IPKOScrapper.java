@@ -19,7 +19,6 @@ public class IPKOScrapper {
     private static final int MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS = 20000;
     private static final int MIN_BACKGROUND_JS_TASKS_ON_PASSWORD_PAGE = 4;
     private static final int MIN_JS_LOADING_WAIT_INTERVAL_MS = 500;
-    private static final int BLOCKS_IN_ACCOUNT_NUMBER = 7;
     private Logger logger;
     private WebClient webClient;
     private HtmlPage currentPage;
@@ -35,11 +34,15 @@ public class IPKOScrapper {
         this.login = login;
         this.password = password;
         this.logger = logger;
+        turnOffHtmlUnitLogs();
         setupWebClientConfiguration();
     }
 
-    private void setupWebClientConfiguration() {
+    private void turnOffHtmlUnitLogs(){
         java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF);
+    }
+
+    private void setupWebClientConfiguration() {
         webClient = new WebClient();
         webClient.getOptions().setRedirectEnabled(true);
         webClient.getOptions().setJavaScriptEnabled(true);
@@ -74,8 +77,7 @@ public class IPKOScrapper {
     }
 
     private void insertIntoInputField(String string) {
-        HtmlInput inputField = getInputField();
-        inputField.setValueAttribute(string);
+        getInputField().setValueAttribute(string);
     }
 
     private HtmlInput getInputField(){
@@ -134,31 +136,31 @@ public class IPKOScrapper {
 
     private void saveDataFromSelectMenuElement(HtmlOption option) {
         String optionText = option.getTextContent().replace("\n", "");
-        String[] splittedOptionText = optionText.split(" ");
-        String accountTitle = buildAccountTitle(splittedOptionText).trim();
-        String accountNumber = buildAccountNumber(splittedOptionText);
+        final int ACCOUNT_NUMBER_DIGIT_COUNT = 26;
+        int currentAccountDigitNumberCount = 0;
+
+        for(int i = optionText.length() - 1; i > 0 ; i--){
+            Character currentChar = optionText.charAt(i);
+            if (Character.isDigit(currentChar)){
+                currentAccountDigitNumberCount++;
+            }
+            if (currentAccountDigitNumberCount == ACCOUNT_NUMBER_DIGIT_COUNT){
+                saveDataFromSelectMenuToMap(optionText, i);
+                break;
+            }
+        }
+    }
+
+    private void saveDataFromSelectMenuToMap(String optionText, int splitIndex) {
+        int index = splitIndex - 1;
+        String accountNumber = optionText.substring(index).trim();
+        String accountTitle = optionText.substring(0, index).trim();
         Account currentAccount = accountMap.get(accountTitle);
         if (currentAccount == null) {
             accountMap.put(accountTitle, new Account(accountTitle, accountNumber, "?"));
         }
     }
 
-    private String buildAccountTitle(String[] splittedSelectListLine) {
-        StringBuilder accNameBuilder = new StringBuilder();
-        for (int i = 0; i < splittedSelectListLine.length - 1 - BLOCKS_IN_ACCOUNT_NUMBER; i++) {
-            accNameBuilder.append(splittedSelectListLine[i] + " ");
-        }
-        accNameBuilder.append(splittedSelectListLine[splittedSelectListLine.length - 1 - BLOCKS_IN_ACCOUNT_NUMBER]);
-        return accNameBuilder.toString();
-    }
-
-    private String buildAccountNumber(String[] accInfoSplitLine) {
-        StringBuilder accountNumBuilder = new StringBuilder();
-        for(int i = accInfoSplitLine.length - BLOCKS_IN_ACCOUNT_NUMBER; i < accInfoSplitLine.length; i++){
-            accountNumBuilder.append(accInfoSplitLine[i]);
-        }
-        return "PL" + accountNumBuilder.toString();
-    }
 
     private void waitBeforeLessJSTasksThanTargetWithMinTime(int targetJSJobCount, Integer minTime) {
         StopWatch stopWatch = new StopWatch();
@@ -207,11 +209,14 @@ public class IPKOScrapper {
         HtmlSpan span = cardContainer.querySelector("a.x-element > div > span");
         String value = span.getTextContent();
         Account current = accountMap.get(accountName);
-        current.setBalance(value);
+        if (current != null){
+            current.setBalance(value);
+        }
+
     }
 
     private boolean isInvalidCredentialsMessagePresent() {
-        return null != currentPage.getFirstByXPath("//div[@class=\"ui-error-message x-invalid-credentials\"]");
+        return null != currentPage.querySelector("div[aria-live=\"alert\"]");
     }
 
     private int waitForJsToLoadInMs(long time) {
@@ -232,7 +237,8 @@ public class IPKOScrapper {
     }
 
     private HtmlButton getLoginButton() {
-        return HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, "button[role=\"button\"]", MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
+        String cssSelector = "button[role=\"button\"]";
+        return HtmlUnitUtil.waitAndReturnElementBySelectorWithTimeout(currentPage, cssSelector, MAX_WAITING_TIME_FOR_HTML_ELEM_TO_LOAD_MS);
     }
 
     private int getJavascriptJobCount() {
